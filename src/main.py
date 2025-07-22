@@ -16,11 +16,10 @@ import os.path
 def copy_directory(src, dest):
     for item in os.listdir(src):
         print('looking at item', item)
-        item = os.path.join(src, item)
-        item_dest = os.path.join(dest, item)
-        if os.path.isfile(item):
-            print('copying file:', item, 'from', src, 'to', item_dest)
-            shutil.copy(item, item_dest)
+        item_path = os.path.join(src, item)
+        if os.path.isfile(item_path):
+            print('copying file:', item_path, 'from', src, 'to', dest)
+            shutil.copy(item_path, dest)
         else:
             new_src = os.path.join(src, item)
             new_dest = os.path.join(dest, item)
@@ -39,12 +38,13 @@ def copy_driver(src, dest):
     else:
         print('clearing out', dest)
         shutil.rmtree(dest)
+        os.mkdir(dest)
     
     copy_directory(src, dest)
     
 def main():
-    src = 'static'
-    dest = 'public'
+    src = 'static/'
+    dest = 'public/'
     copy_driver(src, dest)
 
 if __name__ == '__main__':
