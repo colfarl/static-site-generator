@@ -19,6 +19,7 @@ from textnode import (
 import shutil
 import os
 import os.path
+import sys
 
 def copy_directory(src, dest):
     for item in os.listdir(src):
@@ -55,7 +56,7 @@ def get_file_contents(file_name):
     file.close()
     return contents
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     print("Generating page from", from_path, "to", dest_path, "using", template_path)
     md = get_file_contents(from_path)
     template = get_file_contents(template_path)
@@ -64,6 +65,8 @@ def generate_page(from_path, template_path, dest_path):
     title = exctract_title(md)
     template = template.replace('{{ Title }}', title, 1)
     template = template.replace('{{ Content }}', html, 1)
+    template = template.replace('href="/', 'href="{base_path}')
+    template = template.replace('src="/', 'src="{base_path}')
     
     directory_name = os.path.dirname(dest_path)
     if not os.path.exists(directory_name):
@@ -72,28 +75,35 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w') as f:
         f.write(template)
 
-def generate_page_recursive(dir_path_content, template_path, dest_path):
+def generate_page_recursive(dir_path_content, template_path, dest_path, base_path):
     for item in os.listdir(dir_path_content):
         item_path = os.path.join(dir_path_content, item)
         if os.path.isfile(item_path):
             print('generating content for', item, 'from', item_path, 'to', dest_path)
-            generate_page(item_path, template_path, os.path.join(dest_path, item.replace('.md', '.html')))
+            generate_page(item_path, template_path, os.path.join(dest_path, item.replace('.md', '.html')), base_path)
         else:
             new_src = os.path.join(dir_path_content, item)
             new_dest = os.path.join(dest_path, item)
             print('moving down directory:', new_src, 'to', new_dest)
-            generate_page_recursive(new_src, template_path, new_dest)
+            generate_page_recursive(new_src, template_path, new_dest, base_path)
 def main():
+    if len(sys.argv) > 2:
+        print('Usage: python3 main.py [basepath]')
+
+    base_path = '/'
+    if len(sys.argv) == 2:
+        base_path = sys.argv[1]
+
     # copy over static assets
     src = 'static/'
-    dest = 'public/'
+    dest = 'docs/'
     copy_driver(src, dest)
 
     # write html to new file
     from_path = 'content/'
     template_path = 'template.html'
-    dest_path = 'public/'
-    generate_page_recursive(from_path, template_path, dest_path)
+    dest_path = 'docs/'
+    generate_page_recursive(from_path, template_path, dest_path, base_path)
 
 if __name__ == '__main__':
     main()
