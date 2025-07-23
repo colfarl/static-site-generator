@@ -1,5 +1,5 @@
 import unittest
-from markdown_to_html import markdown_to_html_node
+from markdown_to_html import exctract_title, markdown_to_html_node
 
 class TestMarkDownToHTML(unittest.TestCase):
 
@@ -101,3 +101,24 @@ the **same** even with inline stuff
             html,
            '<div><ul><li>number one</li><li>number</li></ul></div>'
         )
+
+    def test_exctract_title(self):
+        md = '# Hello'
+        title = exctract_title(md)
+        self.assertEqual(
+            title,
+            'Hello'
+        )
+
+    def test_exctract_title_1(self):
+        md = '#    Hello    '
+        title = exctract_title(md)
+        self.assertEqual(
+            title,
+            'Hello'
+        )
+
+    def test_exctract_title_2(self):
+        md = '    Hello    '
+        with self.assertRaises(Exception):
+            title = exctract_title(md)

@@ -11,7 +11,9 @@ def text_to_children(text):
     return children
 
 def make_paragraph(block):
-    return ParentNode('p', text_to_children(block), None)
+    lines = block.split("\n")
+    paragraph = " ".join(lines)
+    return ParentNode('p', text_to_children(paragraph), None)
 
 def make_code(block):
     child = LeafNode('code', block[3:-3], None)
@@ -24,14 +26,37 @@ def make_heading(block):
 def make_ordered_list(block):
     children = []
     for line in block.split('\n'):
-        children.append(LeafNode('li', line.split(' ', 1)[1], None))
+        text = text_to_children(line.split(' ', 1)[1])
+        children.append(ParentNode('li', text, None))
     return ParentNode('ol', children, None)
 
 def make_unordered_list(block):
     children = []
     for line in block.split('\n'):
-        children.append(LeafNode('li', line.split(' ', 1)[1], None))
-    return ParentNode('ul', children, None)
+        text = text_to_children(line.split(' ', 1)[1])
+        children.append(ParentNode('li', text, None))
+    return ParentNode('ol', children, None)
+
+def make_quote(block):
+    lines = block.split("\n")
+    new_lines = []
+    for line in lines:
+        if not line.startswith(">"):
+            raise ValueError("invalid quote block")
+        new_lines.append(line.lstrip(">").strip())
+    content = " ".join(new_lines)
+    children = text_to_children(content)
+    return ParentNode("blockquote", children)
+
+def exctract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.HEADING and block.startswith('# '):
+            block = block.lstrip('# ')
+            block = block.strip()
+            return block
+    raise Exception('No title found in markdown, markdown must contain "# <Title>"')
 
 def markdown_to_html_node(markdown):
     children = []
@@ -44,7 +69,7 @@ def markdown_to_html_node(markdown):
             case BlockType.CODE:
                 children.append(make_code(block))
             case BlockType.QUOTE:
-                print('idk what this is supposed to do') 
+                children.append(make_quote(block))
             case BlockType.HEADING:
                 children.append(make_heading(block)) 
             case BlockType.ORDERED_LIST:

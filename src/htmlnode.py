@@ -45,7 +45,6 @@ class ParentNode(HTMLNode):
             raise ValueError('tag is not an optional feature for class ParentNode')
         if self.children is None or len(self.children) == 0:
             raise ValueError('ParentNode must have children')
-        
         child_html = ''
         for child in self.children:
             child_html += child.to_html()
